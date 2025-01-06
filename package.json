@@ -1,0 +1,35 @@
+{
+	"name": "reimage",
+	"type": "module",
+	"scripts": {
+		"build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./src/index.ts",
+		"deploy": "run-s build zip update",
+		"update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",
+		"zip": "zip -j lambda.zip dist/index.js",
+		"db": "sst shell drizzle-kit",
+		"db:generate": "sst shell drizzle-kit generate",
+		"db:migrate": "sst shell drizzle-kit migrate",
+		"db:push": "sst shell drizzle-kit push",
+		"db:studio": "sst shell drizzle-kit studio"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "8.10.147",
+		"drizzle-kit": "^0.30.1",
+		"esbuild": "^0.21.4",
+		"npm-run-all2": "^6.2.0"
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.722.0",
+		"@aws-sdk/lib-storage": "^3.722.0",
+		"@aws-sdk/s3-request-presigner": "^3.722.0",
+		"@hono/zod-validator": "^0.4.2",
+		"@libsql/client": "^0.14.0",
+		"drizzle-orm": "^0.38.3",
+		"got": "^14.4.5",
+		"hono": "^4.6.15",
+		"sharp": "^0.33.5",
+		"sst": "3.4.53",
+		"uuid": "^11.0.3",
+		"zod": "^3.24.1"
+	}
+}
