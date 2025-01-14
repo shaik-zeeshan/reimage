@@ -63,6 +63,7 @@ export default $config({
 				install: ["sharp", "@libsql/client"],
 			},
 			link: [bucket, ConnectionURL, AuthToken],
+			memory: "2048 MB",
 		});
 
 		api.route("$default", lambdaFunction.arn);

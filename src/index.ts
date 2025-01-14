@@ -40,6 +40,7 @@ app.get("/image", zValidator("query", sharpQueryOptions), async (c) => {
 		got.stream(queries.url).pipe(pipeline);
 
 		c.header("Content-Type", mimetype);
+
 		return stream(c, async (stream) => {
 			// Write a process to be executed when aborted.
 			stream.onAbort(() => {
