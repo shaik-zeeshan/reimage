@@ -62,8 +62,12 @@ export default $config({
 			nodejs: {
 				install: ["sharp", "@libsql/client"],
 			},
+			//concurrency: {
+			//	provisioned: 10,
+			//	reserved: 50,
+			//},
 			link: [bucket, ConnectionURL, AuthToken],
-			memory: "2048 MB",
+			//versioning: true,
 		});
 
 		api.route("$default", lambdaFunction.arn);

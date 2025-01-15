@@ -9,10 +9,10 @@ import {
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import stream from "node:stream";
-import { db } from "./db";
-import { filesTable } from "./db/schema";
-import { getFileFromDatabase } from "./db/helpers";
-import type { MimeType } from "./format";
+import { db } from "../db";
+import { filesTable } from "../db/schema";
+import { getFileFromDatabase } from "../db/helpers";
+import type { MimeType } from "../format";
 
 // const Bucket = Resource["cdn.shaikzeeshan.me"];
 const ImageBucket =
@@ -21,7 +21,7 @@ const ImageBucket =
 		: Resource.ImageBucket.name;
 const s3 = new S3Client();
 
-function getPublicURL(key: string) {
+export function getPublicURL(key: string) {
 	return `https://${ImageBucket}/${key}`;
 }
 
@@ -39,21 +39,20 @@ export function saveFile(filename: string, mimeType: MimeType) {
 		params,
 		client: s3,
 	});
-	upload.on("httpUploadProgress", (progress) => {
-		console.log(progress);
-	});
 
-	upload
-		.done()
-		.then(async (data) => {
-			await db.insert(filesTable).values({
-				key: filename,
-				publicURL: getPublicURL(data.Key ?? filename),
-			});
-		})
-		.finally(() => pass.end());
+	return { pass, upload };
+}
+export async function getFileSign(filename: string) {
+	try {
+		const command = new GetObjectCommand({
+			Key: filename,
+			Bucket: ImageBucket,
+		});
 
-	return pass;
+		return getSignedUrl(s3, command, { expiresIn: 60 * 60 * 2 });
+	} catch (e) {
+		return undefined;
+	}
 }
 
 export async function getFile(filename: string) {
@@ -69,7 +68,7 @@ export async function getFile(filename: string) {
 			Bucket: ImageBucket,
 		});
 
-		return getSignedUrl(s3, command);
+		return getSignedUrl(s3, command, { expiresIn: 60 * 60 * 2 });
 	} catch (e) {
 		return undefined;
 	}

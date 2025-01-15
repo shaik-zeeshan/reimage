@@ -5,6 +5,27 @@ import { zodImageFormat } from "./format";
 const string = z.string();
 
 const resizeFit = z.enum(["contain", "cover", "fill", "inside", "outside"]);
+const resizePosition = z.enum([
+	"top",
+	"right top",
+	"right",
+	"right bottom",
+	"bottom",
+	"left bottom",
+	"left",
+	"left top",
+	"center",
+]);
+
+const ResizeOptions = [
+	"fit",
+	"position",
+	"background",
+	"kernel",
+	"withoutReduction",
+	"withoutEnlargement",
+	"fastShrinkOnLoad",
+];
 
 export const sharpQueryOptions = z
 	.object({
@@ -19,6 +40,7 @@ export const sharpQueryOptions = z
 		width: z.coerce.number().optional(),
 		height: z.coerce.number().optional(),
 		fit: resizeFit.optional().default("cover"),
+		position: resizePosition.optional().default("center"),
 	})
 	.superRefine((values, context) => {
 		if (values.format !== "jpeg" && values.mozjpeg) {

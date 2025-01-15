@@ -3,12 +3,12 @@ import got from "got";
 import { Hono } from "hono";
 import { handle } from "hono/aws-lambda";
 import sharp from "sharp";
-import { getFile, saveFile } from "./bucket";
+import { getFile, getFileSign, getPublicURL, saveFile } from "./bucket";
 import { generateUUID, uniqueQueryID } from "./helpers";
-import { stream } from "hono/streaming";
-import { PassThrough } from "node:stream";
 import { createSharpTransformer, sharpQueryOptions } from "./sharp";
 import { getImageMimeType } from "./format";
+import { db } from "./db";
+import { filesTable } from "./db/schema";
 
 const app = new Hono();
 
@@ -25,37 +25,50 @@ app.get("/image", zValidator("query", sharpQueryOptions), async (c) => {
 		const image = await getFile(fileId);
 
 		if (image !== undefined) {
-			return c.redirect(image);
+			return c.redirect(image, 301);
 		}
 
 		const pipeline = createSharpTransformer(sharp(), queries);
 		const mimetype = getImageMimeType(queries.format || "jpeg");
 
-		const saveFileStream = saveFile(fileId, mimetype);
+		const { pass: saveFileStream, upload } = saveFile(fileId, mimetype);
 
 		pipeline.pipe(saveFileStream);
 
-		const processedStream = pipeline.pipe(new PassThrough());
+		const status = await new Promise((resolve, reject) => {
+			got.stream(queries.url).pipe(pipeline);
 
-		got.stream(queries.url).pipe(pipeline);
-
-		c.header("Content-Type", mimetype);
-
-		return stream(c, async (stream) => {
-			// Write a process to be executed when aborted.
-			stream.onAbort(() => {
-				console.log("Aborted!");
-			});
-
-			for await (const chunk of processedStream) {
-				await stream.write(chunk);
-			}
+			upload
+				.done()
+				.then(async (data) => {
+					await db.insert(filesTable).values({
+						key: data.Key || fileId,
+						publicURL: getPublicURL(data.Key || fileId),
+					});
+					resolve("done");
+				})
+				.catch(() => reject());
 		});
+
+		if (status !== "done") {
+			throw new Error("Unable to process image");
+		}
+
+		const imagecheck = await getFileSign(fileId);
+
+		if (imagecheck === undefined) {
+			throw new Error("Image not Founded");
+		}
+
+		return c.redirect(imagecheck, 301);
 	} catch (e) {
 		if (e instanceof Error) {
-			return c.json({
-				error: e.message,
-			});
+			return c.json(
+				{
+					error: e.message,
+				},
+				400,
+			);
 		}
 		return c.json({
 			error: "Internal Server Error",
