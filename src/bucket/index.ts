@@ -21,6 +21,9 @@ const ImageBucket =
 		: Resource.ImageBucket.name;
 const s3 = new S3Client();
 
+const HOURS = 6;
+const ExprireTime = HOURS && 60 * 60 * HOURS;
+
 export function getPublicURL(key: string) {
 	return `https://${ImageBucket}/${key}`;
 }
@@ -49,7 +52,7 @@ export async function getFileSign(filename: string) {
 			Bucket: ImageBucket,
 		});
 
-		return getSignedUrl(s3, command, { expiresIn: 60 * 60 * 2 });
+		return getSignedUrl(s3, command, { expiresIn: ExprireTime });
 	} catch (e) {
 		return undefined;
 	}
@@ -68,7 +71,7 @@ export async function getFile(filename: string) {
 			Bucket: ImageBucket,
 		});
 
-		return getSignedUrl(s3, command, { expiresIn: 60 * 60 * 2 });
+		return getSignedUrl(s3, command, { expiresIn: ExprireTime });
 	} catch (e) {
 		return undefined;
 	}
