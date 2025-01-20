@@ -1,6 +1,6 @@
 import type { Sharp } from "sharp";
 import { z } from "zod";
-import { zodImageFormat } from "./format";
+import { zodImageFormat } from "../format";
 
 const string = z.string();
 

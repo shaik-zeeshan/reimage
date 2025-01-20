@@ -1,5 +1,4 @@
-import { Resource } from "sst";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import stream from "node:stream";
 import {
 	DeleteObjectCommand,
 	DeleteObjectsCommand,
@@ -8,13 +7,11 @@ import {
 	S3Client,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
-import stream from "node:stream";
-import { db } from "../db";
-import { filesTable } from "../db/schema";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Resource } from "sst";
 import { getFileFromDatabase } from "../db/helpers";
 import type { MimeType } from "../format";
 
-// const Bucket = Resource["cdn.shaikzeeshan.me"];
 const ImageBucket =
 	Resource.App.stage === "shaikzeeshan"
 		? Resource["ImageBucket-dev"].name
