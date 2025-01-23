@@ -10,7 +10,7 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
     }
-    "ImageBucket": {
+    "ImageBucket-dev": {
       "name": string
       "type": "sst.aws.Bucket"
     }

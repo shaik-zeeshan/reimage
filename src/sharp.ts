@@ -5,6 +5,7 @@ import { zodImageFormat } from "./format";
 const string = z.string();
 
 const resizeFit = z.enum(["contain", "cover", "fill", "inside", "outside"]);
+
 const resizePosition = z.enum([
 	"top",
 	"right top",
